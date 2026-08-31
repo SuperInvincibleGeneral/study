@@ -1,0 +1,4 @@
+# Windows のバッチファイルは CRLF、シェルスクリプトは LF に固定する。
+# git の core.autocrlf 設定に関わらず、checkout 時の改行コードを保証するため。
+*.bat text eol=crlf
+*.sh  text eol=lf
