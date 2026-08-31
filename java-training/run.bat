@@ -1,4 +1,4 @@
-@echo off
+﻿@echo off
 chcp 65001 >nul
 rem ↑ このファイルは日本語コメントを含むため、chcp は @echo off の直後、
 rem   日本語を含む行より前に置くこと。そうしないと Windows が既定のコード
