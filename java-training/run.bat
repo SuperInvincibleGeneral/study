@@ -3,13 +3,18 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 rem ============================================================
-rem  Java 研修課題 テスト実行スクリプト（Windows 用）
+rem  Java training - test runner for Windows
 rem
-rem    run.bat 01           work\ のコード（自分が編集したもの）をテスト
-rem    run.bat 01 solution  solution\ のコード（解答例）をテスト
+rem    run.bat 01           test the code in work
+rem    run.bat 01 solution  test the sample answer in solution
 rem
-rem  このファイルは「UTF-8 (BOM 付き)」「改行 CRLF」で保存すること。
-rem  chcp の行は日本語を含む行より前に置くこと。順序を変えると文字化けする。
+rem  Save this file as UTF-8 with BOM, using CRLF line endings.
+rem  Keep the chcp line above every line that is not plain ASCII.
+rem
+rem  Keep every rem comment in plain ASCII, and never put the
+rem  redirection characters in a rem line. cmd.exe still treats
+rem  them as redirection even inside a comment, which silently
+rem  breaks the script. Japanese notes belong in README.md.
 rem ============================================================
 
 set "NO=%~1"
@@ -23,9 +28,9 @@ if "%TARGET%"=="" set "TARGET=work"
 
 set "BASE=%~dp0"
 
-rem 課題フォルダを探す。
-rem cmd.exe がワイルドカードを展開してくれるのは FOR の中だけなので、
-rem 探索は必ず FOR を通して行う。
+rem Find the exercise folder.
+rem cmd.exe expands wildcards only inside FOR, so always search
+rem through a FOR loop.
 set "EXDIR="
 for /d %%D in ("%BASE%ex%NO%-*") do set "EXDIR=%%D"
 
@@ -51,19 +56,20 @@ set "OUT=%EXDIR%\out-%TARGET%"
 if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
 
-rem コンパイル対象の .java を集める。
+rem Collect the .java files to compile.
 rem
-rem javac に "common\*.java" のような文字列をそのまま渡してはいけない。
-rem cmd.exe はワイルドカードを展開しないため、javac は
-rem 「*.java という名前のファイル」を探しに行って失敗する。
+rem Never pass a pattern such as common\*.java to javac. cmd.exe
+rem does not expand wildcards for ordinary programs, so javac
+rem would look for a file literally named *.java and fail.
 rem
-rem また、javac のレスポンスファイル（@ファイル名）も使ってはいけない。
-rem javac は @ファイルの中身ではバックスラッシュをエスケープ文字として
-rem 解釈するため、Windows のパス区切りが消えてしまう。
-rem   例) "C:\Users\taro\Assert.java" -> C:Users<TAB>aroAssert.java
+rem Never use a javac response file (@file) either. javac treats a
+rem backslash inside a response file as an escape character, so
+rem Windows path separators are eaten. For example the path
+rem C:\Users\taro\Assert.java becomes C:UsersaroAssert.java, and
+rem the \t even turns into a tab character.
 rem
-rem そこで、対象フォルダへ移動してから FOR で1件ずつ列挙し、
-rem フルパス（%%~fF）を並べてコマンドラインで直接渡す。
+rem So: enter each folder, list the files with FOR, and pass the
+rem full paths (%%~fF) directly on the command line.
 set "SRC="
 
 pushd "%BASE%common"
@@ -93,7 +99,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-rem テストクラス名（例: Ex01Test）を取得する。
+rem Get the test class name, for example Ex01Test.
 set "MAIN="
 pushd "%EXDIR%\test"
 for %%F in (*Test.java) do set "MAIN=%%~nF"
