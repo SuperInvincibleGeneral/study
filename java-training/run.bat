@@ -31,8 +31,20 @@ set OUT=%EXDIR%\out-%TARGET%
 if exist "%OUT%" rmdir /s /q "%OUT%"
 mkdir "%OUT%"
 
+rem cmd.exe は "*.java" のようなワイルドカードを、javac のような普通のプログラムに
+rem 渡す前に展開してくれない（FOR 文の中でだけワイルドカードが展開される）。
+rem そのため javac に "...\common\*.java" のような文字列をそのまま渡すと、
+rem javac はアスタリスクを含む1個のファイル名として探しに行き見つからない。
+rem ここでは FOR で実際のファイルを列挙し、javac のレスポンスファイル（@ファイル名）
+rem として渡すことで、この問題と Windows のコマンドライン長の上限を両方回避する。
+set SOURCES=%OUT%\sources.txt
+if exist "%SOURCES%" del "%SOURCES%"
+for %%F in ("%BASE%common\*.java") do echo "%%F">>"%SOURCES%"
+for %%F in ("%EXDIR%\%TARGET%\*.java") do echo "%%F">>"%SOURCES%"
+for %%F in ("%EXDIR%\test\*.java") do echo "%%F">>"%SOURCES%"
+
 echo == コンパイル (%NO% / %TARGET%) ==
-javac -encoding UTF-8 -d "%OUT%" "%BASE%common\*.java" "%EXDIR%\%TARGET%\*.java" "%EXDIR%\test\*.java"
+javac -encoding UTF-8 -d "%OUT%" "@%SOURCES%"
 if errorlevel 1 (
   echo.
   echo !! コンパイルに失敗しました。上のエラーメッセージが最初の手がかりです。
