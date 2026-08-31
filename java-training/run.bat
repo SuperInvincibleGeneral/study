@@ -41,6 +41,11 @@ if not exist "%EXDIR%\test\" (
   echo フォルダがありません: %EXDIR%\test
   exit /b 2
 )
+if not exist "%BASE%common\" (
+  echo フォルダがありません: %BASE%common
+  echo java-training フォルダ一式が揃った状態で実行してください。
+  exit /b 2
+)
 
 set "OUT=%EXDIR%\out-%TARGET%"
 if exist "%OUT%" rmdir /s /q "%OUT%"
